@@ -5,13 +5,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.corte.Adaptadores.AdapterEdicion;
 import com.example.corte.Adaptadores.AdapterRecycler;
 import com.example.corte.Models.Datum;
+import com.example.corte.Models.Edicion;
 import com.example.corte.WebService.Asynchtask;
 import com.example.corte.WebService.WebService;
 
@@ -31,28 +32,29 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-public class MainActivity extends AppCompatActivity implements Asynchtask {
+public class MainActivity2 extends AppCompatActivity implements Asynchtask {
 
     private RecyclerView recyclerView;
-    private AdapterRecycler adapterRecycler;
-    ArrayList<Datum> listData;
-    Bundle b;
+    private AdapterEdicion adapteredic;
+    ArrayList<Edicion> listEdic;
     Intent intent;
+    Bundle b;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        recyclerView = (RecyclerView)findViewById(R.id.rec_rev);
-        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        setContentView(R.layout.activity_main2);
+        b = this.getIntent().getExtras();
+        recyclerView = (RecyclerView)findViewById(R.id.rec_edic);
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity2.this));
         handleSSLHandshake();
         InvokeWs();
     }
 
     private void InvokeWs(){
-        String url ="https://revistas.uteq.edu.ec/ws/journals.php";
+        String url ="https://revistas.uteq.edu.ec/ws/issues.php?j_id="+b.getString("journal_id");
         Map<String, String> datos = new HashMap<String, String>();
-        WebService ws= new WebService(url, datos, MainActivity.this, MainActivity.this);
+        WebService ws= new WebService(url, datos, this, MainActivity2.this);
         ws.execute("GET");
     }
 
@@ -85,23 +87,26 @@ public class MainActivity extends AppCompatActivity implements Asynchtask {
         } catch (Exception ignored) {
         }
     }
+
     @Override
     public void processFinish(String result) throws JSONException {
         try {
-            intent = new Intent(this, MainActivity2.class);
+            intent= new Intent(this, Categorias.class);
             JSONArray jsonlista= new JSONArray(result);
-            listData = Datum.JsonObjectsBuild(jsonlista);
-            adapterRecycler= new AdapterRecycler(getApplicationContext(), listData);
-            b = new Bundle();
-            adapterRecycler.setOnClickListener(new View.OnClickListener() {
+            listEdic = Edicion.JsonObjectsBuild(jsonlista);
+            adapteredic= new AdapterEdicion(getApplicationContext(), listEdic);
+            adapteredic.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
-                    b.putString("journal_id", listData.get(recyclerView.getChildAdapterPosition(view)).getJournalId());
+                public void onClick(View v) {
+                    b=new Bundle();
+                    b.putString("idIS",   listEdic.get(recyclerView.getChildAdapterPosition(v)).getIssueId());
                     intent.putExtras(b);
+                    Toast.makeText(getApplicationContext(),"Seleccionó la edición:"
+                            + listEdic.get(recyclerView.getChildAdapterPosition(v)).getTitle(),Toast.LENGTH_SHORT).show();
                     startActivity(intent);
                 }
             });
-            recyclerView.setAdapter(adapterRecycler);
+            recyclerView.setAdapter(adapteredic);
 
         }catch (JSONException e)
         {
