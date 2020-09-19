@@ -1,5 +1,10 @@
 package com.example.corte.Models;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class Articulo_Base {
@@ -17,7 +22,25 @@ public class Articulo_Base {
     private List<Author> authors = null;
 
 
+    public Articulo_Base(JSONObject item) throws JSONException {
 
+        title =item.getString("title");
+        doi = item.getString("doi");
+        _abstract = item.getString("abstract");
+        datePublished= item.getString("date_published");
+
+    }
+
+
+
+    public static ArrayList<Articulo_Base> JsonObjectsBuild(JSONArray datos) throws JSONException {
+        ArrayList<Articulo_Base> articulos = new ArrayList<>();
+
+        for (int i = 0; i < datos.length() ; i++) {
+            articulos.add(new Articulo_Base(datos.getJSONObject(i)));
+        }
+        return articulos;
+    }
 
 
 
@@ -120,6 +143,11 @@ public class Articulo_Base {
     public class Keyword {
 
         private String keyword;
+
+        public Keyword()
+        {
+
+        }
 
         public String getKeyword() {
             return keyword;
